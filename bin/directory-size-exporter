@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import os
+import os.path
+import sys
+
+import inotify.adapters
+
+WATCH_TYPE_NAMES = set(["IN_CREATE", "IN_MODIFY", "IN_CLOSE_WRITE", "IN_MOVED_FROM", "IN_MOVED_TO", "IN_DELETE"])
+IGNORE_TYPE_NAMES = set(["IN_OPEN", "IN_ACCESS", "IN_CLOSE_NOWRITE", "IN_ISDIR"])
+
+def main(watch_path) -> None:
+    i = inotify.adapters.InotifyTree(watch_path)
+
+    for event in i.event_gen(yield_nones=False, timeout_s=None):
+        (_, type_names, path, filename) = event
+
+        for type_name in type_names:
+            if type_name in WATCH_TYPE_NAMES:
+                try:
+                    size = os.stat(os.path.join(path, filename)).st_size
+                except FileNotFoundError:
+                    print(f"PATH=[{path}] FILENAME=[{filename}] EVENT_TYPES={type_names} FileNotFoundError")
+                    continue
+                print(f"PATH=[{path}] FILENAME=[{filename}] EVENT_TYPES={type_names} SIZE={size}")
+            elif type_name in IGNORE_TYPE_NAMES:
+                pass
+            else:
+                print(f"Unknown type name: {type_name} PATH=[{path}] FILENAME=[{filename}] EVENT_TYPES={type_names}")
+
+if __name__ == "__main__":
+    main(sys.argv[1])
