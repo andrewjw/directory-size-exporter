@@ -6,6 +6,8 @@ class SummaryNode(Node):
     def __init__(self, parent: "Node" | None, name: str) -> None:
         super().__init__(parent, name)
 
+        self.mtime = os.stat(self.path).st_mtime
+
         size = 0
         for file in os.listdir(self.path):
             try:
@@ -25,6 +27,10 @@ class SummaryNode(Node):
                 pass
 
         self.__size = size
+
+    def update(self) -> None:
+        if os.stat(self.path).st_mtime > self.mtime:
+            self.parent.replace_child(self.name)
 
     @property
     def size(self) -> int:

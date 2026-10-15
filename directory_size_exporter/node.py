@@ -8,6 +8,12 @@ class Node:
 
         self.mtime = os.stat(self.path).st_mtime
 
+    def update(self) -> None:
+        raise NotImplementedError()
+
+    def replace_child(self, child: str) -> None:
+        raise NotImplementedError()
+
     @property
     def size(self) -> int:
         raise NotImplementedError()

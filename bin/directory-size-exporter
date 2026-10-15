@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 
-import glob
 import os
 import os.path
 import sys
+import time
 
 import inotify.adapters
 
-from directory_size_exporter import SummaryNode
+from directory_size_exporter import RootNode
 
 WATCH_TYPE_NAMES = set(["IN_CREATE", "IN_MODIFY", "IN_CLOSE_WRITE", "IN_MOVED_FROM", "IN_MOVED_TO", "IN_DELETE"])
 IGNORE_TYPE_NAMES = set(["IN_OPEN", "IN_ACCESS", "IN_CLOSE_NOWRITE", "IN_ISDIR"])
 
 def main(*watch_paths) -> None:
-    for watch_path in watch_paths:
-        print(watch_path)
-        sn = SummaryNode(None, watch_path)
-        print(watch_path, sn.size)
+    nodes = [RootNode(p) for p in watch_paths]
+    while True:
+        for node in nodes:
+            node.update()
+            print(node.path, node.size)
+
+        time.sleep(30)
 
 def notify(watch_path) -> None:
     i = inotify.adapters.InotifyTree(watch_path)
