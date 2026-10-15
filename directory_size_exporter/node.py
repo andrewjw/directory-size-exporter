@@ -6,7 +6,7 @@ class Node:
         self.parent = parent
         self.name = name
 
-        self.mtime = os.stat(self.path).st_mtime
+        self._mtime = os.stat(self.path).st_mtime
 
     def update(self) -> None:
         raise NotImplementedError()

@@ -11,7 +11,7 @@ class FullNode(Node):
         super().__init__(parent, name)
 
         self.__lock = threading.RLock()
-        self.mtime = os.stat(self.path).st_mtime
+        self._mtime = os.stat(self.path).st_mtime
         self.children: Dict[str, Node] = {}
         self.files: Dict[str, int] = {}
 
@@ -20,10 +20,6 @@ class FullNode(Node):
 
     def update(self) -> None:
         with self.__lock:
-            new_mtime = os.stat(self.path).st_mtime
-            if new_mtime == self.mtime:
-                return
-
             new_dir = os.listdir(self.path)
 
             for file in new_dir:
@@ -39,12 +35,13 @@ class FullNode(Node):
         self.children[file] = self._get_node_for_directory(file)
 
     def _get_node_for_directory(self, path) -> Node:
-        if (time.time() - os.stat(os.path.join(self.path, path)).st_mtime) > 24 * 60 * 60:
-            print("Get summary for ", os.path.join(self.path, path))
-            return SummaryNode(self, path)
+        if path in self.children:
+            if (time.time() - self.children[path].mtime) > 24 * 60 * 60:
+                return SummaryNode(self, path)
+            else:
+                return FullNode(self, path)
         else:
-            print("Get full for ", os.path.join(self.path, path))
-            return FullNode(self, path)
+            return SummaryNode(self, path)
 
     def _update_child(self, file) -> None:
         try:
