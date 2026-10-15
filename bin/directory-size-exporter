@@ -16,8 +16,11 @@ def main(*watch_paths) -> None:
     nodes = [RootNode(p) for p in watch_paths]
     while True:
         for node in nodes:
+            start = time.time()
             node.update()
-            print(node.path, node.size)
+            size = node.size
+            end = time.time()
+            print(node.node.path, size, end - start)
 
         time.sleep(30)
 

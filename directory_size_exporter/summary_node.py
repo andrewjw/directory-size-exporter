@@ -15,7 +15,6 @@ class SummaryNode(Node):
             self._update()
 
         if (time.time() - self.mtime) < self.FULL_NODE_LIMIT:
-            print(self.path, self.parent)
             self.parent.replace_child(self.name)
 
     def _update(self) -> None:

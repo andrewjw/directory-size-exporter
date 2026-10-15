@@ -40,10 +40,8 @@ class FullNode(Node):
     def _get_node_for_directory(self, path) -> Node:
         if path in self.children:
             if (time.time() - self.children[path].mtime) > self.FULL_NODE_LIMIT:
-                print(f"Replacing {path} with summary")
                 return SummaryNode(self, path)
             else:
-                print(f"Replacing {path} with full node")
                 return FullNode(self, path)
         else:
             return SummaryNode(self, path)
