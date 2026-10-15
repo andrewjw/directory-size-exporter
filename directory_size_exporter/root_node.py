@@ -17,15 +17,21 @@ class RootNode(Node):
 
     def _get_node_for_directory(self, path: str, mtime: int) -> Node:
         if (time.time() - mtime) > self.FULL_NODE_LIMIT:
-            print("Get summary for ", path, mtime, time.time() - mtime)
             return SummaryNode(self, path)
         else:
-            print("Get full for ", path, mtime, time.time() - mtime)
             return FullNode(self, path)
 
     @property
     def size(self) -> int:
         return self.node.size
+
+    @property
+    def file_count(self) -> int:
+        return self.node.file_count
+
+    @property
+    def dir_count(self) -> int:
+        return self.node.dir_count
 
     @property
     def path(self) -> str:

@@ -75,5 +75,13 @@ class FullNode(Node):
         return sum([v[0] for v in self.files.values()]) + sum([n.size for n in self.children.values()])
 
     @property
+    def file_count(self) -> int:
+        return len(self.files) + sum([n.file_count for n in self.children.values()])
+
+    @property
+    def dir_count(self):
+        return len(self.children) + sum([n.dir_count for n in self.children.values()])
+
+    @property
     def mtime(self) -> int:
         return max([self._mtime] + [v[1] for v in self.files.values()] + [n.mtime for n in self.children.values()])

@@ -18,9 +18,9 @@ def main(*watch_paths) -> None:
         for node in nodes:
             start = time.time()
             node.update()
-            size = node.size
+            size, files, dirs = node.size, node.file_count, node.dir_count
             end = time.time()
-            print(node.node.path, size, end - start)
+            print(node.node.path, size, files, dirs, end - start)
 
         time.sleep(30)
 

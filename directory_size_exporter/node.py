@@ -30,6 +30,14 @@ class Node:
         raise NotImplementedError()
 
     @property
+    def file_count(self) -> int:
+        raise NotImplementedError()
+    
+    @property
+    def dir_count(self) -> int:
+        raise NotImplementedError()
+
+    @property
     def path(self) -> str:
         if self.parent is None:
             return self.name
