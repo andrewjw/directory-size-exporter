@@ -1,7 +1,10 @@
 import os
 import os.path
+import time
 
 class Node:
+    FULL_NODE_LIMIT = 24 * 60 * 60
+
     def __init__(self, parent: "Node" | None, name: str) -> None:
         self.parent = parent
         self.name = name
@@ -12,6 +15,14 @@ class Node:
         raise NotImplementedError()
 
     def replace_child(self, child: str) -> None:
+        raise NotImplementedError()
+
+    @property
+    def age(self) -> int:
+        return time.time() - self.mtime
+
+    @property
+    def mtime(self) -> int:
         raise NotImplementedError()
 
     @property

@@ -14,8 +14,8 @@ class SummaryNode(Node):
         if random.random() < 0.1:
             self._update()
 
-        print(self.path, (time.time() - self.mtime))
-        if (time.time() - self.mtime) > 24 * 60 * 60:
+        if (time.time() - self.mtime) < self.FULL_NODE_LIMIT:
+            print(self.path, self.parent)
             self.parent.replace_child(self.name)
 
     def _update(self) -> None:

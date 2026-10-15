@@ -13,7 +13,7 @@ class FullNode(Node):
         self.__lock = threading.RLock()
         self._mtime = os.stat(self.path).st_mtime
         self.children: Dict[str, Node] = {}
-        self.files: Dict[str, int] = {}
+        self.files: Dict[str, (int, int)] = {}
 
         for file in os.listdir(self.path):
             self._update_child(file)
@@ -31,14 +31,19 @@ class FullNode(Node):
                 if deleted in self.children:
                     del self.children[deleted]
 
-    def replace_node(self, file: str) -> None:
+            if self.age > self.FULL_NODE_LIMIT:
+                return self.parent.replace_child(self.name) 
+
+    def replace_child(self, file: str) -> None:
         self.children[file] = self._get_node_for_directory(file)
 
     def _get_node_for_directory(self, path) -> Node:
         if path in self.children:
-            if (time.time() - self.children[path].mtime) > 24 * 60 * 60:
+            if (time.time() - self.children[path].mtime) > self.FULL_NODE_LIMIT:
+                print(f"Replacing {path} with summary")
                 return SummaryNode(self, path)
             else:
+                print(f"Replacing {path} with full node")
                 return FullNode(self, path)
         else:
             return SummaryNode(self, path)
@@ -48,7 +53,8 @@ class FullNode(Node):
             path = os.path.join(self.path, file)
 
             if os.path.islink(path):
-                self.files[file] = os.lstat(path).st_size
+                stat = os.lstat(path).st_size
+                self.files[file] = stat.st_size, stat.st_mtime
                 if file in self.children:
                     del self.children[file]
             elif os.path.isdir(path):
@@ -59,7 +65,8 @@ class FullNode(Node):
                 if file in self.files:
                     del self.files[file]
             else:
-                self.files[file] = os.stat(path).st_size
+                stat = os.stat(path)
+                self.files[file] = stat.st_size, stat.st_mtime
                 if file in self.children:
                     del self.children[file]
         except FileNotFoundError:
@@ -67,4 +74,8 @@ class FullNode(Node):
 
     @property
     def size(self) -> int:
-        return sum(self.files.values()) + sum([n.size for n in self.children.values()])
+        return sum([v[0] for v in self.files.values()]) + sum([n.size for n in self.children.values()])
+
+    @property
+    def mtime(self) -> int:
+        return max([self._mtime] + [v[1] for v in self.files.values()] + [n.mtime for n in self.children.values()])
