@@ -7,20 +7,18 @@ import time
 
 import inotify.adapters
 
-from directory_size_exporter import RootNode
+from directory_size_exporter import TopLevel, get_arguments
 
 WATCH_TYPE_NAMES = set(["IN_CREATE", "IN_MODIFY", "IN_CLOSE_WRITE", "IN_MOVED_FROM", "IN_MOVED_TO", "IN_DELETE"])
 IGNORE_TYPE_NAMES = set(["IN_OPEN", "IN_ACCESS", "IN_CLOSE_NOWRITE", "IN_ISDIR"])
 
-def main(*watch_paths) -> None:
-    nodes = [RootNode(p) for p in watch_paths]
+def main() -> None:
+    args = get_arguments(sys.argv[1:])
+
+    top_levels = [TopLevel(d, args.level) for d in args.directories]
     while True:
-        for node in nodes:
-            start = time.time()
-            node.update()
-            size, files, dirs = node.size, node.file_count, node.dir_count
-            end = time.time()
-            print(node.node.path, size, files, dirs, end - start)
+        for top in top_levels:
+            top.update()
 
         time.sleep(30)
 
@@ -44,4 +42,4 @@ def notify(watch_path) -> None:
                 print(f"Unknown type name: {type_name} PATH=[{path}] FILENAME=[{filename}] EVENT_TYPES={type_names}")
 
 if __name__ == "__main__":
-    main(*sys.argv[1:])
+    main()
